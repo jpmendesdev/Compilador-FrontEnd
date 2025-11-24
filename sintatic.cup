@@ -1,0 +1,169 @@
+package parser;
+
+import java.util.*;
+import AST.*;
+
+parser code {:
+    public Program getAST() {
+        return (Program) RESULT;
+    }
+:};
+
+/* ----------------------------------------
+   Terminais
+---------------------------------------- */
+
+terminal String ident, STRING;
+terminal Integer digitos;
+
+terminal SUM, SUBTRACT, MULT, DIVISION, MODULE;
+terminal DECLARATION, EQUALS;
+terminal COMPARISON, GREATER_THEN, GREATER_OR_EQ, LESS_THEN, LESS_OR_EQ;
+terminal AND, OR, NOT;
+
+terminal KW_PKG, KW_INT, KW_FLOAT;
+terminal KW_PRINT, KW_FUNC, KW_RETURN;
+terminal KW_IF, KW_ELIF, KW_ELSE;
+terminal KW_FOR, KW_WHILE;
+terminal KW_DELIMITER;
+
+terminal RETURN_TYPE;
+
+terminal PAR_OPEN, PAR_CLOSE;
+terminal CH_OPEN, CH_CLOSE;
+terminal BR_OPEN, BR_CLOSE;
+
+terminal COMMA, SEMICOLON;
+terminal COMMENT_SL, COMMENT_ML;
+
+/* ----------------------------------------
+   Não-terminais
+---------------------------------------- */
+
+nonterminal Program program;
+nonterminal List statements, functions;
+nonterminal Statement statement;
+nonterminal Expression expr;
+nonterminal Function function;
+nonterminal Block block;
+
+/* ----------------------------------------
+   Precedência
+---------------------------------------- */
+
+precedence left OR;
+precedence left AND;
+precedence left EQUALS, COMPARISON;
+precedence left GREATER_THEN, GREATER_OR_EQ, LESS_THEN, LESS_OR_EQ;
+precedence left SUM, SUBTRACT;
+precedence left MULT, DIVISION, MODULE;
+
+/* ----------------------------------------
+   Gramática
+---------------------------------------- */
+
+program ::= functions:f
+            {: RESULT = new Program(f); :}
+          | statements:s
+            {: RESULT = new Program(s); :}
+          ;
+
+functions ::= function:f
+              {: RESULT = new ArrayList(); RESULT.add(f); :}
+            | functions:l function:f
+              {: l.add(f); RESULT = l; :}
+            ;
+
+function ::= KW_FUNC ident:id PAR_OPEN PAR_CLOSE KW_DELIMITER block:b
+             {: RESULT = new Function(id, b); :}
+           ;
+
+block ::= CH_OPEN block_body CH_CLOSE
+           {: RESULT = $2; :}
+        ;
+
+block_body ::= statements:s
+                {: RESULT = new Block(s); :}
+             ;
+
+statements ::= statement:s
+               {: RESULT = new ArrayList(); RESULT.add(s); :}
+             | statements:l statement:s
+               {: l.add(s); RESULT = l; :}
+             ;
+
+statement ::= ident:id DECLARATION expr:e SEMICOLON
+               {: RESULT = new Assign(id, e); :}
+
+            | KW_PRINT PAR_OPEN expr:e PAR_CLOSE SEMICOLON
+               {: RESULT = new Print(e); :}
+
+            | KW_RETURN expr:e SEMICOLON
+               {: RESULT = new Return(e); :}
+
+            | KW_IF PAR_OPEN expr:cond PAR_CLOSE KW_DELIMITER block:b
+               {: RESULT = new If(cond, b, null, null); :}
+
+            | KW_IF PAR_OPEN expr:cond PAR_CLOSE KW_DELIMITER block:b1
+              KW_ELIF PAR_OPEN expr:e2 PAR_CLOSE KW_DELIMITER block:b2
+               {: RESULT = new If(cond, b1, e2, b2); :}
+
+            | KW_IF PAR_OPEN expr:cond PAR_CLOSE KW_DELIMITER block:b1
+              KW_ELSE KW_DELIMITER block:b2
+               {: RESULT = new If(cond, b1, null, b2); :}
+
+            | KW_WHILE PAR_OPEN expr:cond PAR_CLOSE KW_DELIMITER block:b
+               {: RESULT = new While(cond, b); :}
+
+            | KW_FOR ident:id KW_DELIMITER block:b
+               {: RESULT = new For(id, b); :}
+
+            | expr:e SEMICOLON
+               {: RESULT = new ExprStmt(e); :}
+            ;
+
+expr ::= digitos:d
+          {: RESULT = new NumberNode(d); :}
+
+       | STRING:s
+          {: RESULT = new StringNode(s); :}
+
+       | ident:id
+          {: RESULT = new VarNode(id); :}
+
+       | expr:e1 SUM expr:e2
+          {: RESULT = new BinOp("+", e1, e2); :}
+
+       | expr:e1 SUBTRACT expr:e2
+          {: RESULT = new BinOp("-", e1, e2); :}
+
+       | expr:e1 MULT expr:e2
+          {: RESULT = new BinOp("*", e1, e2); :}
+
+       | expr:e1 DIVISION expr:e2
+          {: RESULT = new BinOp("/", e1, e2); :}
+
+       | expr:e1 MODULE expr:e2
+          {: RESULT = new BinOp("%", e1, e2); :}
+
+       | expr:e1 EQUALS expr:e2
+          {: RESULT = new BinOp("==", e1, e2); :}
+
+       | expr:e1 COMPARISON expr:e2
+          {: RESULT = new BinOp("!=", e1, e2); :}
+
+       | expr:e1 GREATER_THEN expr:e2
+          {: RESULT = new BinOp(">", e1, e2); :}
+
+       | expr:e1 GREATER_OR_EQ expr:e2
+          {: RESULT = new BinOp(">=", e1, e2); :}
+
+       | expr:e1 LESS_THEN expr:e2
+          {: RESULT = new BinOp("<", e1, e2); :}
+
+       | expr:e1 LESS_OR_EQ expr:e2
+          {: RESULT = new BinOp("<=", e1, e2); :}
+
+       | PAR_OPEN expr:e PAR_CLOSE
+          {: RESULT = e; :}
+       ;

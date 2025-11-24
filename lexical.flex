@@ -19,6 +19,7 @@ LESS_THEN = "<"
 LESS_OR_EQ = "<="
 AND = "and"
 NOT = "not"
+OR = "or"
 KW_PKG = package
 KW_INT = {digito}+
 KW_FLOAT = {digito}+\.{digito}+
@@ -58,6 +59,7 @@ COMMENT_ML =  "'''" ([^'] | ('{1,2}[^']))* "'''"
 {EQUALS} {System.out.print("<EQUALS>");}
 {AND} {System.out.print("<AND>");}
 {NOT} {System.out.print("<NOT>");}
+{OR} {System.out.print("<OR>");}
 {KW_PKG}     {System.out.print("<KW_PKG>");}
 {KW_INT}     {System.out.print("<KW_INT>");}
 {KW_FLOAT}     {System.out.print("<KW_FLOAT>");}
