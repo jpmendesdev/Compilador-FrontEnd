@@ -1,0 +1,106 @@
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+    scanner s;
+    parser(scanner s){ this.s=s; }
+:}
+
+scan with {: return s.next_token(); :};
+
+terminal            SEMI, FOR, PLUS, MINUS, TIMES, UMINUS, DIV, MOD, LPAREN, RPAREN, CLBRACKET, CRBRACKET , LBRACKET, RBRACKET;
+terminal String     STRING, LETRA;
+terminal Integer    NUMBER;
+terminal Float      FLOAT;
+terminal IF, ELSE;
+terminal EQ, NEQ, LT, GT, LE, GE; 
+terminal AND, OR, NOT;    
+terminal DELIMITER;
+terminal AT;
+terminal IDENT;
+terminal FUNC;
+terminal RANGE;
+terminal IN;
+terminal WHILE;
+
+non terminal           expr_list;
+non terminal Object    expr;
+non terminal InstrucaoFOR, Inicializacao, Condicao, Iteracao;
+
+precedence left PLUS, MINUS;
+precedence left TIMES;
+precedence left UMINUS;
+precedence left DIV;
+precedence left MOD;
+precedence left OR;
+precedence left AND;
+precedence right NOT;
+precedence left EQ, NEQ;
+precedence left LT, GT, LE, GE;
+precedence left ELSE;
+
+
+expr_list ::= expr_list expr:e SEMI         {: System.out.println(e);:}
+            | expr:e SEMI                   {: System.out.println(e);:}
+;
+
+expr ::= LETRA:l  {: RESULT = l; :};
+
+expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = (Integer)e1+(Integer)e2;       :}
+             | expr:e1 MINUS expr:e2        {: RESULT = (Integer)e1-(Integer)e2;       :}
+             | expr:e1 TIMES expr:e2        {: RESULT = (Integer)e1*(Integer)e2;       :}
+             | MINUS expr:e                 {: RESULT = -(Integer)e;          :}
+             | expr:e1 DIV expr:e2          {: RESULT = (Integer)e1/(Integer)e2;       :}
+             | expr:e1 MOD expr:e2          {: RESULT = (Integer)e1%(Integer)e2;       :}
+  	     %prec UMINUS
+       | LPAREN expr:e RPAREN	         {: RESULT = e;           :}
+       | LBRACKET expr:e RBRACKET	     {: RESULT = e;           :}
+       | CLBRACKET expr:e CRBRACKET	     {: RESULT = e;           :}
+       | NUMBER:n	                     {: RESULT = n;           :}
+       | FLOAT:f                         {: RESULT = f.floatValue(); :}
+       | STRING:s {: RESULT = s; :}
+       | IDENT AT expr:e	            {: RESULT = e;           :}
+       | FUNC IDENT LPAREN RPAREN DELIMITER expr:e	            {: RESULT = e;           :}
+      |expr:e1 LT  expr:e2    {: RESULT = ((Number)e1).doubleValue() < ((Number)e2).doubleValue(); :}
+    | expr:e1 GT  expr:e2    {: RESULT = ((Number)e1).doubleValue() > ((Number)e2).doubleValue(); :}
+    | expr:e1 LE  expr:e2    {: RESULT = ((Number)e1).doubleValue() <= ((Number)e2).doubleValue(); :}
+    | expr:e1 GE  expr:e2    {: RESULT = ((Number)e1).doubleValue() >= ((Number)e2).doubleValue(); :}
+    | expr:e1 EQ  expr:e2    {: RESULT = e1.equals(e2); :}
+    | expr:e1 NEQ expr:e2    {: RESULT = !e1.equals(e2); :}
+    | NOT expr:e              {: RESULT = !((Boolean)e); :}
+    | expr:e1 AND expr:e2     {: RESULT = ((Boolean)e1) && ((Boolean)e2); :}
+    | expr:e1 OR  expr:e2     {: RESULT = ((Boolean)e1) || ((Boolean)e2); :}
+    |IF LPAREN expr:e RPAREN DELIMITER expr:then_expr ELSE expr:else_expr
+        {: 
+           Boolean cond = (Boolean) e;
+           RESULT = cond ? then_expr : else_expr;
+        :}
+    |IF LPAREN expr:e RPAREN DELIMITER expr:then_expr
+        {:
+           Boolean cond = (Boolean) e;
+           RESULT = cond ? then_expr : null;
+        :}
+    | FOR IDENT:id IN RANGE expr:e DELIMITER
+    {:
+        int limite = ((Number)e).intValue();
+        for (int i = 1; i <= limite; i++) {
+            System.out.println(i);
+        }
+    :}
+    | WHILE LPAREN expr:cond RPAREN DELIMITER expr:body
+    {:
+        while (true) {
+            Boolean c = (Boolean)cond;
+
+            if (!c)
+                break;
+            System.out.println(body);
+            break;
+        }
+
+        RESULT = null;
+    :}
+    ;
+    
+
+
