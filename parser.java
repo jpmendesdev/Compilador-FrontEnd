@@ -782,13 +782,11 @@ class CUP$parser$actions {
 		int bodyright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object body = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		
-        while (true) {
-            Boolean c = (Boolean)cond;
+        Boolean condicao = (Boolean)cond;
+        Object mensagem = body;
 
-            if (!c)
-                break;
-            System.out.println(body);
-            break;
+        while (condicao) {
+            System.out.println(mensagem);
         }
 
         RESULT = null;

@@ -87,20 +87,20 @@ expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = (Integer)e1+(Integer)e2;
             System.out.println(i);
         }
     :}
-    | WHILE LPAREN expr:cond RPAREN DELIMITER expr:body
+     | WHILE LPAREN expr:cond RPAREN DELIMITER expr:body
     {:
-        while (true) {
-            Boolean c = (Boolean)cond;
+        Boolean condicao = (Boolean)cond;
+        Object mensagem = body;
 
-            if (!c)
-                break;
-            System.out.println(body);
-            break;
+        while (condicao) {
+            System.out.println(mensagem);
         }
 
         RESULT = null;
     :}
-    ;
+
+
+;
     
 
 
